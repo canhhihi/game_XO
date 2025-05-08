@@ -1,6 +1,8 @@
 package model;
 
 import controller.BoardController;
+import model.behavior.AIPlayerBehavior;
+import model.behavior.PlayerBehavior;
 
 public class AIPlayer extends Player {
     private PlayerBehavior behavior;

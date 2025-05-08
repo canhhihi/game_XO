@@ -20,128 +20,120 @@ public class GamePanel extends JPanel {
 
     BoardController boardController;
 
-        public GamePanel() {
-            setLayout(new BorderLayout(0,0));
-            initializeComponents();
+    public GamePanel() {
+        setLayout(new BorderLayout(0,0));
+        initializeComponents();
+    }
+
+    private void initializeComponents() {
+        // Top: Control panel
+        controlsPanel = new ControlsPanel(e->modeButton(),e -> resizeButton(), e -> resetGame());
+        add(controlsPanel, BorderLayout.SOUTH);
+
+        //Game khoi tao
+        XOBoard board = new XOBoard(3, 3);
+        boardController = new BoardController(board,false);
+
+        // Left: Player 1
+        player1Panel = new PlayersPanel(boardController.getPlayers().get(0));
+        add(player1Panel, BorderLayout.WEST);
+
+        // Right: Player 2
+        player2Panel = new PlayersPanel(boardController.getPlayers().get(1));
+        add(player2Panel, BorderLayout.EAST);
+
+        // Center: Board panel
+        centerPanel = new JPanel();
+        resetGame();
+    }
+
+    //Tao bang
+    private void createBoard(){
+        int size = controlsPanel.getSelectedSize();
+        int winCondition = size == 3 ? 3 : 5;
+        int cellSize = size == 3 ? 60 : 40;
+        if (centerPanel != null) {
+            remove(centerPanel);// xoá panel cũ
         }
+        centerPanel = new JPanel();
+        centerPanel.setLayout(new BorderLayout());
 
-        private void initializeComponents() {
-            // Top: Control panel
-            controlsPanel = new ControlsPanel(e->modeButton(),e -> resizeButton(), e -> resetGame());
-            add(controlsPanel, BorderLayout.SOUTH);
+        //mode
+        boolean mode = controlsPanel.getSelectedMode();
 
-            XOBoard board = new XOBoard(3, 3);
-            boardController = new BoardController(board,false);
+        XOBoard board = new XOBoard(size, winCondition);
+        boardController = new BoardController(board,mode);
+        displayPanel = new DisplayPanel(boardController.getActualPlayer());
+        centerPanel.add(displayPanel, BorderLayout.NORTH);
 
-            // Left: Player 1
-            player1Panel = new PlayersPanel(boardController.getPlayers().get(0));
-            add(player1Panel, BorderLayout.WEST);
+        /* kiem tra handleClick*/
+        boardPanel = new BoardPanel(size, cellSize, boardController,e -> handleButtonClick(e));
+        centerPanel.add(boardPanel, BorderLayout.CENTER);
+        add(centerPanel,BorderLayout.CENTER);
 
-            // Right: Player 2
-            player2Panel = new PlayersPanel(boardController.getPlayers().get(1));
-            add(player2Panel, BorderLayout.EAST);
+        player1Panel.setPlayer(boardController.getPlayers().get(0));
+        player2Panel.setPlayer(boardController.getPlayers().get(1));
+    }
 
-            // Center: Board panel
-            centerPanel = new JPanel();
-            resetGame();
-        }
-        //modebutton
-        private void modeButton() {
-            resetGame();
-        }
+    //modebutton, thay doi che do
+    private void modeButton() {
+        resetGame();
+    }
 
-        //Thay đổi chế đố 3x3, 15x15
-        private void resizeButton() {
-            Player player1 = boardController.getPlayers().get(0);
-            Player player2 = boardController.getPlayers().get(1);
-            resetGame();
-            boardController.getPlayers().set(0, player1);
-            boardController.getPlayers().set(1, player2);
-            boardController.setActualPlayer(player1);
-            player1Panel.updateScore(boardController.getPlayers().get(0));
-            player2Panel.updateScore(boardController.getPlayers().get(1));
-//            revalidate();
-            repaint();
-        }
+    //Thay đổi kich thuoc 3x3, 15x15
+    private void resizeButton() {
+        Player player1 = boardController.getPlayers().get(0);
+        Player player2 = boardController.getPlayers().get(1);
 
-        //Làm mới điểm số
-        private void refreshButton(){
-            boardPanel.refresh();
-            //revalidate();
-            repaint();
-        }
+        createBoard();
+        boardController.getPlayers().set(0, player1);
+        boardController.getPlayers().set(1, player2);
+        boardController.setActualPlayer(player1);
 
-        //Làm mới toàn bộ board và điểm số
-        private void resetGame() {
-            int size = controlsPanel.getSelectedSize();
-            int winCondition = size == 3 ? 3 : 5;
-            int cellSize = size == 3 ? 60 : 40;
-            if (centerPanel != null) {
-                remove(centerPanel);// xoá panel cũ
-            }
-            centerPanel = new JPanel();
-            centerPanel.setLayout(new BorderLayout());
+        player1Panel.setPlayer(player1);
+        player2Panel.setPlayer(player2);
+        player1Panel.updateScore();
+        player2Panel.updateScore();
 
-            //mode
-            boolean mode = controlsPanel.getSelectedMode();
+        revalidate();
+        repaint();
+    }
 
-            XOBoard board = new XOBoard(size, winCondition);
-            boardController = new BoardController(board,mode);
-            displayPanel = new DisplayPanel(boardController.getActualPlayer());
-            centerPanel.add(displayPanel, BorderLayout.NORTH);
+    //Lam moi sau khi game hoa or thang
+    private void refreshButton(){
+        boardPanel.refresh();
+        boardController.switchPlayer();
+        if(boardController.isAIMode()) if(boardController.getActualPlayer() instanceof AIPlayer) boardController.switchPlayer();
+        displayPanel.setDisplayText(boardController.getActualPlayer());
+        repaint();
+    }
 
-            /* kiem tra handleClick*/
-            boardPanel = new BoardPanel(size, cellSize, boardController,e -> handleButtonClick(e));
-            centerPanel.add(boardPanel, BorderLayout.CENTER);
-            add(centerPanel,BorderLayout.CENTER);
+    //Làm mới toàn bộ board và điểm số
+    private void resetGame() {
+        createBoard();
 
-            // Cập nhật tên và tỉ số
-            player1Panel.updateScore(boardController.getPlayers().get(0));
-            player2Panel.updateScore(boardController.getPlayers().get(1));
+        // Cập nhật tên và tỉ số
+        player1Panel.updateScore();
+        player2Panel.updateScore();
+        player1Panel.updateName();
+        player2Panel.updateName();
 
-            revalidate();
-            repaint();
-        }
+        revalidate();
+        repaint();
+    }
 
-        private void handleButtonClick(ActionEvent e) {
-            String[] coords = e.getActionCommand().split(",");
-            int row = Integer.parseInt(coords[0]);
-            int col = Integer.parseInt(coords[1]);
+    private void handleButtonClick(ActionEvent e) {
+        String[] coords = e.getActionCommand().split(",");
+        int row = Integer.parseInt(coords[0]);
+        int col = Integer.parseInt(coords[1]);
 
-            if (boardController.checkMove(row, col)) {
-                char symbol = boardController.getActualPlayer().getCurrentSymbol();
-                boardPanel.updateButton(row, col, symbol);
-                if (boardController.checkWinCondition(row, col)) {
-                    boardController.updateScore();
-                    player1Panel.updateScore(boardController.getPlayers().get(0));
-                    player2Panel.updateScore(boardController.getPlayers().get(1));
-                    showWinMessage(boardController.getActualPlayer().getPlayerName());
-                    return;
-                }
-                if (boardController.isFull()) {
-                    showDrawMessage();
-                    return;
-                }
-                boardController.switchPlayer();
-                displayPanel.setDisplayText(boardController.getActualPlayer());
-                //them
-                if (boardController.getActualPlayer() instanceof AIPlayer) {
-                    int[] aiMove = ((AIPlayer)boardController.getActualPlayer()).getNextMove(boardController);
-                    performAIMove(aiMove[0], aiMove[1]);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Ô [" + row + "," + col + "] không hợp lệ!");
-            }
-        }
-    private void performAIMove(int row, int col) {
         if (boardController.checkMove(row, col)) {
             char symbol = boardController.getActualPlayer().getCurrentSymbol();
             boardPanel.updateButton(row, col, symbol);
-
             if (boardController.checkWinCondition(row, col)) {
                 boardController.updateScore();
-                player1Panel.updateScore(boardController.getPlayers().get(0));
-                player2Panel.updateScore(boardController.getPlayers().get(1));
+                player1Panel.updateScore();
+                player2Panel.updateScore();
                 showWinMessage(boardController.getActualPlayer().getPlayerName());
                 return;
             }
@@ -151,27 +143,48 @@ public class GamePanel extends JPanel {
             }
             boardController.switchPlayer();
             displayPanel.setDisplayText(boardController.getActualPlayer());
+            //them
+            if (boardController.getActualPlayer() instanceof AIPlayer) {
+                int[] aiMove = ((AIPlayer)boardController.getActualPlayer()).getNextMove(boardController);
+                performAIMove(aiMove[0], aiMove[1]);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Ô [" + row + "," + col + "] không hợp lệ!");
         }
     }
 
-        private void showWinMessage(String player) {
-            JOptionPane.showMessageDialog(this, "Người chơi " + player + " thắng!");
-            boardController.switchPlayer();
-            displayPanel.setDisplayText(boardController.getActualPlayer());
-            if(boardController.isAIMode()) resizeButton();
-            else
+    private void performAIMove(int row, int col) {
+    if (boardController.checkMove(row, col)) {
+        char symbol = boardController.getActualPlayer().getCurrentSymbol();
+        boardPanel.updateButton(row, col, symbol);
+
+        if (boardController.checkWinCondition(row, col)) {
+            boardController.updateScore();
+            player1Panel.updateScore();
+            player2Panel.updateScore();
+            showWinMessage(boardController.getActualPlayer().getPlayerName());
+            return;
+        }
+        if (boardController.isFull()) {
+            showDrawMessage();
+            return;
+        }
+        boardController.switchPlayer();
+        displayPanel.setDisplayText(boardController.getActualPlayer());
+    }
+    }
+
+    private void showWinMessage(String player) {
+        JOptionPane.showMessageDialog(this, "Người chơi " + player + " thắng!");
+        refreshButton();
+    }
+
+    private void showDrawMessage() {
+        JOptionPane.showMessageDialog(this, "Hòa!");
             refreshButton();
-        }
-
-        private void showDrawMessage() {
-            JOptionPane.showMessageDialog(this, "Hòa!");
-            boardController.switchPlayer();
-            displayPanel.setDisplayText(boardController.getActualPlayer());
-            if(boardController.isAIMode()) resizeButton();
-            else
-                refreshButton();
-        }
     }
+
+}
 
 
 

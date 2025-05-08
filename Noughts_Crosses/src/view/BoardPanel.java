@@ -28,7 +28,7 @@ public class BoardPanel extends JPanel {
             for (int j = 0; j < size; j++) {
                 final int row = i;
                 final int col = j;
-                RoundedButton button = new RoundedButton(Color.decode("#34495E"), Color.WHITE);
+                RoundedButton button = new RoundedButton(Color.decode("#34495E"), Color.lightGray);
                 button.setMargin(new Insets(0, 0, 0, 0));
 
                 button.setPreferredSize(new Dimension(cellSize, cellSize));
