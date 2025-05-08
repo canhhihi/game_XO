@@ -8,7 +8,6 @@ public class Main {
             JFrame frame = new JFrame("Tic-Tac-Toe");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(1080, 880);
-            frame.setBackground(Color.BLACK);
             frame.add(new GamePanel());
             frame.setVisible(true);
     }

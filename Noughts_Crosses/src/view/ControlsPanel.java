@@ -13,7 +13,7 @@ public class ControlsPanel extends JPanel {
         setLayout(new FlowLayout());
         setPreferredSize(new Dimension(300, 50));
 
-        modeCombo = new JComboBox<>(new String[]{"Choi voi nguoi", "Choi voi may"});
+        modeCombo = new JComboBox<>(new String[]{"WITH PEOPLE", "WITH COMPUTER"});
         modeCombo.addActionListener(modeListener);
         add(modeCombo);
 
@@ -30,5 +30,6 @@ public class ControlsPanel extends JPanel {
         return sizeCombo.getSelectedIndex() == 0 ? 3 : 15;
     }
     public boolean getSelectedMode(){
-        return modeCombo.getSelectedIndex() == 0 ? false : true;}
+        return modeCombo.getSelectedIndex() != 0;
+    }
 }

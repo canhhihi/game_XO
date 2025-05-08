@@ -1,7 +1,6 @@
 package view;
 
 import controller.BoardController;
-//import controller.XOController;
 
 import javax.swing.*;
 import java.awt.*;

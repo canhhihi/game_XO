@@ -2,7 +2,6 @@
 package view;
 
 import controller.BoardController;
-import model.AIPlayer;
 import model.Player;
 import model.XOBoard;
 
@@ -25,6 +24,7 @@ public class GamePanel extends JPanel {
         initializeComponents();
     }
 
+    //Khoi tao game
     private void initializeComponents() {
         // Top: Control panel
         controlsPanel = new ControlsPanel(e->modeButton(),e -> resizeButton(), e -> resetGame());
@@ -103,7 +103,6 @@ public class GamePanel extends JPanel {
     private void refreshButton(){
         boardPanel.refresh();
         boardController.switchPlayer();
-        if(boardController.isAIMode()) if(boardController.getActualPlayer() instanceof AIPlayer) boardController.switchPlayer();
         displayPanel.setDisplayText(boardController.getActualPlayer());
         repaint();
     }
@@ -143,45 +142,19 @@ public class GamePanel extends JPanel {
             }
             boardController.switchPlayer();
             displayPanel.setDisplayText(boardController.getActualPlayer());
-            //them
-            if (boardController.getActualPlayer() instanceof AIPlayer) {
-                int[] aiMove = ((AIPlayer)boardController.getActualPlayer()).getNextMove(boardController);
-                performAIMove(aiMove[0], aiMove[1]);
-            }
         } else {
             JOptionPane.showMessageDialog(this, "Ô [" + row + "," + col + "] không hợp lệ!");
         }
     }
 
-    private void performAIMove(int row, int col) {
-    if (boardController.checkMove(row, col)) {
-        char symbol = boardController.getActualPlayer().getCurrentSymbol();
-        boardPanel.updateButton(row, col, symbol);
-
-        if (boardController.checkWinCondition(row, col)) {
-            boardController.updateScore();
-            player1Panel.updateScore();
-            player2Panel.updateScore();
-            showWinMessage(boardController.getActualPlayer().getPlayerName());
-            return;
-        }
-        if (boardController.isFull()) {
-            showDrawMessage();
-            return;
-        }
-        boardController.switchPlayer();
-        displayPanel.setDisplayText(boardController.getActualPlayer());
-    }
-    }
-
     private void showWinMessage(String player) {
-        JOptionPane.showMessageDialog(this, "Người chơi " + player + " thắng!");
+        JOptionPane.showMessageDialog(this,   player + " win!");
         refreshButton();
     }
 
     private void showDrawMessage() {
-        JOptionPane.showMessageDialog(this, "Hòa!");
-            refreshButton();
+        JOptionPane.showMessageDialog(this, "Draw!");
+        refreshButton();
     }
 
 }

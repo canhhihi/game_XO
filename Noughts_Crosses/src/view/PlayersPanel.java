@@ -3,8 +3,6 @@ package view;
 import model.Player;
 
 import javax.swing.*;
-
-import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 
 public class PlayersPanel extends JPanel {
@@ -50,7 +48,6 @@ public class PlayersPanel extends JPanel {
 
     void updateScore(){
         scoreLabel.setText(""+this. player.getScore());
-        System.out.println(player.getScore());
     }
 
     void updateName(){

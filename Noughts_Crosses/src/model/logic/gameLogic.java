@@ -5,19 +5,16 @@ import model.XOBoard;
 public class gameLogic implements victoryLogic {
 
     private int winCondition;
-    //private char playerSymbol;
     private XOBoard board;
 
 
     public gameLogic(XOBoard board) {
         this.board = board;
         this.winCondition = board.getWinCondition();
-        //this.playerSymbol =
     }
 
     @Override
     public boolean checkRow(int row, int col) {
-
         int count = 0;
         char playerSymbol = board.getBoard().get(row).get(col);
         for (int j = Math.max(0, col - winCondition + 1); j <= Math.min(board.getSize() - 1, col + winCondition - 1); j++) {
@@ -29,7 +26,6 @@ public class gameLogic implements victoryLogic {
             }
         }
         return false;
-
     }
 
     @Override

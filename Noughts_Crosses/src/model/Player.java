@@ -1,25 +1,24 @@
 package model;
 
-import java.util.ArrayList;
+import model.behavior.HumanBehavior;
 
 public class Player {
 
     private String playerName;
-    //private ArrayList< ArrayList<Integer> > yourMove;
     private char currentSymbol;
     private int isOrder;
-    //private boolean isTurn;
     private int score;
+    private HumanBehavior humanBehavior;
 
     /*
         getter, setter and cntructor
      */
     public Player(int Order) {
         this.playerName = "Player " + Order;
-        //this.yourMove = new ArrayList<ArrayList<Integer>>();
         this.currentSymbol = (Order %2 == 0) ? 'O' : 'X';
         this.isOrder = Order;
         this.score = 0;
+
     }
 
     public String getPlayerName() {
