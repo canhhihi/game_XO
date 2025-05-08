@@ -11,6 +11,5 @@ public class Main {
             frame.setBackground(Color.BLACK);
             frame.add(new GamePanel());
             frame.setVisible(true);
-
     }
 }

@@ -4,8 +4,8 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 public class RoundedButton extends JButton {
-    private Color backgroundColor = Color.WHITE; // Màu nền bên trong (trắng)
-    private Color borderColor = Color.YELLOW;   // Màu viền ngoài (vàng)
+    private Color backgroundColor; // Màu nền bên trong (trắng)
+    private Color borderColor;   // Màu viền ngoài (vàng)
 
     public RoundedButton(String text) {
         super(text);
@@ -30,11 +30,11 @@ public class RoundedButton extends JButton {
         // Vẽ viền ngoài (bo góc với viền vàng)
         g2.setColor(borderColor);
         g2.setStroke(new BasicStroke(5));  // Độ dày của viền
-        g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 20, 20); // Vẽ viền ngoài
+        g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 0, 0); // Vẽ viền ngoài
 
         // Vẽ nền bên trong (trắng hoặc trong suốt)
         g2.setColor(backgroundColor);
-        g2.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 20, 20);  // Vẽ nền bo góc
+        g2.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 15, 15);  // Vẽ nền bo góc
 
         super.paintComponent(g);  // Vẽ text và icon
         g2.dispose();
