@@ -9,12 +9,12 @@ public class ControlsPanel extends JPanel {
     private JComboBox<String> sizeCombo;
     private JButton resetButton;
 
-    public ControlsPanel(ActionListener sizeListener, ActionListener resetListener) {
+    public ControlsPanel(ActionListener modeListener,ActionListener sizeListener, ActionListener resetListener) {
         setLayout(new FlowLayout());
         setPreferredSize(new Dimension(300, 50));
 
         modeCombo = new JComboBox<>(new String[]{"Choi voi nguoi", "Choi voi may"});
-        modeCombo.addActionListener(sizeListener);
+        modeCombo.addActionListener(modeListener);
         add(modeCombo);
 
         sizeCombo = new JComboBox<>(new String[]{"3x3", "15x15"});
@@ -29,4 +29,6 @@ public class ControlsPanel extends JPanel {
     public int getSelectedSize(){
         return sizeCombo.getSelectedIndex() == 0 ? 3 : 15;
     }
+    public boolean getSelectedMode(){
+        return modeCombo.getSelectedIndex() == 0 ? false : true;}
 }

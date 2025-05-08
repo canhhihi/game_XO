@@ -1,0 +1,61 @@
+//package model;
+//
+//import controller.BoardController;
+//import java.util.Random;
+//
+//public class AIPlayerBehavior implements PlayerBehavior {
+//    @Override
+//    public int[] getNextMove(BoardController BoardController) {
+//        int size = BoardController.getXOBoard().getSize();
+//        char aiSymbol = BoardController.getActualPlayer().getCurrentSymbol();
+//        char opponentSymbol = (aiSymbol == 'X') ? 'O' : 'X';
+//
+//        // 1. Kiểm tra nước thắng ngay
+//        for (int i = 0; i < size; i++) {
+//            for (int j = 0; j < size; j++) {
+//                if (BoardController.getXOBoard().getBoard().get(i).get(j) == ' ') {
+//                    BoardController.getXOBoard().getBoard().get(i).set(j, aiSymbol);
+//                    if (BoardController.checkWinCondition(i, j)) {
+//                        BoardController.getXOBoard().getBoard().get(i).set(j, ' ');
+//                        return new int[]{i, j};
+//                    }
+//                    BoardController.getXOBoard().getBoard().get(i).set(j, ' ');
+//                }
+//            }
+//        }
+//
+//        // 2. Chặn đối thủ thắng
+//        for (int i = 0; i < size; i++) {
+//            for (int j = 0; j < size; j++) {
+//                if (BoardController.getXOBoard().getBoard().get(i).get(j) == ' ') {
+//                    BoardController.getXOBoard().getBoard().get(i).set(j, opponentSymbol);
+//                    if (BoardController.checkWinCondition(i, j)) {
+//                        BoardController.getXOBoard().getBoard().get(i).set(j, ' ');
+//                        return new int[]{i, j};
+//                    }
+//                    BoardController.getXOBoard().getBoard().get(i).set(j, ' ');
+//                }
+//            }
+//        }
+//
+//        // 3. Ưu tiên ô trung tâm (cho 3x3 hoặc 15x15)
+//        if (size == 3 && BoardController.getXOBoard().getBoard().get(1).get(1) == ' ') {
+//            return new int[]{1, 1};
+//        } else if (size == 15) {
+//            int center = size / 2;
+//            if (BoardController.getXOBoard().getBoard().get(center).get(center) == ' ') {
+//                return new int[]{center, center};
+//            }
+//        }
+//
+//        // 4. Chọn ngẫu nhiên
+//        Random rand = new Random();
+//        while (true) {
+//            int row = rand.nextInt(size);
+//            int col = rand.nextInt(size);
+//            if (BoardController.getXOBoard().getBoard().get(row).get(col) == ' ') {
+//                return new int[]{row, col};
+//            }
+//        }
+//    }
+//}

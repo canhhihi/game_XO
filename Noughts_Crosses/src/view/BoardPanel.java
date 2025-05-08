@@ -5,6 +5,7 @@ import controller.BoardController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class BoardPanel extends JPanel {
@@ -27,14 +28,14 @@ public class BoardPanel extends JPanel {
             for (int j = 0; j < size; j++) {
                 final int row = i;
                 final int col = j;
-                RoundedButton button = new RoundedButton(Color.black, Color.gray);
+                RoundedButton button = new RoundedButton(Color.decode("#34495E"), Color.WHITE);
                 button.setMargin(new Insets(0, 0, 0, 0));
 
                 button.setPreferredSize(new Dimension(cellSize, cellSize));
-                button.setFont(new Font("Arial",Font.BOLD,size == 3 ? 150: 15));
+                button.setFont(new Font("Arial Black",Font.BOLD,size == 3 ? 150: 15));
 
                 button.addActionListener(e->buttonClickListener.actionPerformed(
-                        new java.awt.event.ActionEvent(button, row * size + col, row + "," + col)));
+                        new ActionEvent(button, row * size + col, row + "," + col)));
                 buttons[i][j] = button;
                 add(button);
             }
@@ -43,7 +44,7 @@ public class BoardPanel extends JPanel {
 
     public void updateButton(int row, int col, char symbol) {
         buttons[row][col].setText(String.valueOf(symbol));
-        buttons[row][col].setForeground(symbol=='X' ? Color.green : Color.WHITE);
+        buttons[row][col].setForeground(symbol=='X' ? Color.decode("#27AE60") : Color.decode("#F39C12"));
     }
 
     public void refresh() {

@@ -4,7 +4,8 @@ import model.Player;
 import model.XOBoard;
 import model.logic.gameLogic;
 
-import static model.XOBoard.playerAmount;
+import model.AIPlayer;
+//import static model.XOBoard.playerAmount;
 
 import java.util.ArrayList;
 
@@ -13,18 +14,26 @@ public class BoardController {
     private ArrayList<Player> players;
     private Player actualPlayer;
 
-    public BoardController(XOBoard board) {
+    //
+    private boolean isAIMode;
+
+    public BoardController(XOBoard board, boolean isAiMode) {
         this.board = board;
+        this.isAIMode = isAiMode;
+        this.players = new ArrayList<>();
         generatePlayer();
     }
 
     private void generatePlayer(){
-        players = new ArrayList<>();
-        for(int i = 1; i <= playerAmount;i++){
-            Player player = new Player(i);
-            this.players.add(player);
-        }
+        players.add(new Player(1)); // Người chơi 1 luôn là người
+        players.add(isAIMode ? new AIPlayer(2) : new Player(2)); // Người chơi 2 là AI nếu isAIMode
         actualPlayer = players.get(0);
+//        players = new ArrayList<>();
+//        for(int i = 1; i <= playerAmount;i++){
+//            Player player = new Player(i);
+//            this.players.add(player);
+//        }
+//        actualPlayer = players.get(0);
     }
 
     public XOBoard getXOBoard() {
@@ -51,6 +60,10 @@ public class BoardController {
         this.actualPlayer = actualPlayer;
     }
 
+    public boolean isAIMode() {
+        return isAIMode;
+    }
+
     private void setMove(int row, int col) {
         board.getBoard().get(row).set( col , actualPlayer.getCurrentSymbol());
     }
@@ -66,10 +79,8 @@ public class BoardController {
     public boolean checkWinCondition(int row, int col) {
         gameLogic checkWin = new gameLogic(this.board);
         if(checkWin.checkCol(row,col) || checkWin.checkRow(row,col) || checkWin.checkDiagonalM(row,col) || checkWin.checkDiagonalS(row,col)){
-            actualPlayer.setScore(actualPlayer.getScore() + 1);
             return true;
         }
-
         return false;
     }
 
@@ -80,6 +91,9 @@ public class BoardController {
             }
         }
         return true;
+    }
+    public void updateScore(){
+        actualPlayer.setScore(actualPlayer.getScore() + 1);
     }
 
     public void switchPlayer() {
@@ -93,4 +107,5 @@ public class BoardController {
             }
         }
     }
+
 }
