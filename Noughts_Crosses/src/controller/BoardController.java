@@ -5,22 +5,24 @@ import model.XOBoard;
 import model.logic.gameLogic;
 
 import model.AIPlayer;
-//import static model.XOBoard.playerAmount;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class BoardController {
-private  XOBoard board;
-private ArrayList<Player> players;
-private Player actualPlayer;
+    private  XOBoard board;
+    private ArrayList<Player> players;
+    private Player actualPlayer;
+    private boolean isAIMode;
+    private Stack<MoveHistory> undoMove;
+    private Deque<MoveHistory> redoMove;
 
-//
-private boolean isAIMode;
 
 public BoardController(XOBoard board, boolean isAiMode) {
     this.board = board;
     this.isAIMode = isAiMode;
     this.players = new ArrayList<>();
+    this.undoMove = new Stack<>();
+    this.redoMove = new LinkedList<>();
     generatePlayer();
 }
 
@@ -60,6 +62,8 @@ public boolean isAIMode() {
 
 private void setMove(int row, int col) {
     board.getBoard().get(row).set( col , actualPlayer.getCurrentSymbol());
+    undoMove.push(new MoveHistory(row,col,actualPlayer));
+    redoMove.clear();
 }
 
 public boolean checkMove(int row, int col) {
@@ -102,6 +106,56 @@ public void reset() {
             board.getBoard().get(i).set(j,' ');
         }
     }
+
+    /**
+     * check it
+     */
+    redoMove.clear();
+    undoMove.clear();
 }
+
+    public MoveHistory undoLastMove() {
+        if (undoMove.isEmpty()) {
+            return null;
+        }
+        // Get last move from history
+        MoveHistory lastMove = undoMove.pop();
+        // Clear the cell
+        board.getBoard().get(lastMove.getRow()).set(lastMove.getCol(), ' ');
+        // Add to redo history
+        redoMove.push(lastMove);
+        // Set the current player to the one who made the undone move
+        actualPlayer = lastMove.getPlayer();
+        return lastMove;
+    }
+    public MoveHistory redoLastMove() {
+        if (redoMove.isEmpty()) {
+            return null;
+        }
+        // Get last undone move
+        MoveHistory redoLastMove = redoMove.pop();
+        // Execute the move again
+        board.getBoard().get(redoLastMove.getRow()).set(redoLastMove.getCol(), redoLastMove.getSymbol());
+        // Add back to move history
+        undoMove.push(redoLastMove);
+        // Switch to the next player (since we're redoing a completed move)
+        Player movePlayer = redoLastMove.getPlayer();
+        //actualPlayer = movePlayer;
+        switchPlayer();
+        return redoLastMove;
+    }
+
+    public boolean canUndo() {
+        return !undoMove.isEmpty();
+    }
+
+    public boolean canRedo() {
+        return !redoMove.isEmpty();
+    }
+
+    //tra ve so luot da di
+    public int getMoveCount() {
+        return undoMove.size();
+    }
 
 }
