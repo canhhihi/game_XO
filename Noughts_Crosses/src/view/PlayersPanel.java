@@ -54,6 +54,6 @@ public class PlayersPanel extends JPanel {
     }
 
     void updateName(){
-        nameField.setText(player.getPlayerName());
+        nameField.setText(player.getPlayerName() + "(" + player.getCurrentSymbol() + ")");
     }
 }

@@ -1,7 +1,7 @@
-
 package model.behavior;
 
 import controller.BoardController;
+import model.behavior.PlayerBehavior;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,17 +56,30 @@ public class AIPlayerBehavior implements PlayerBehavior {
         xoController.getXOBoard().getBoard().get(row).set(col, opponentSymbol);
         if (xoController.checkWinCondition(row, col)) {
             xoController.getXOBoard().getBoard().get(row).set(col, ' ');
-            return 10000; // Ưu tiên cao để chặn thắng ngay
+            return 10000; // Chặn thắng ngay
         }
         xoController.getXOBoard().getBoard().get(row).set(col, ' ');
 
         // 3. Đánh giá tiềm năng thắng/chặn (hàng, cột, đường chéo)
-        score += evaluateLine(row, col, 0, 1, xoController, aiSymbol, opponentSymbol); // Hàng
-        score += evaluateLine(row, col, 1, 0, xoController, aiSymbol, opponentSymbol); // Cột
-        score += evaluateLine(row, col, 1, 1, xoController, aiSymbol, opponentSymbol); // Đường chéo chính
-        score += evaluateLine(row, col, 1, -1, xoController, aiSymbol, opponentSymbol); // Đường chéo phụ
+        int[] lineScores = new int[4];
+        lineScores[0] = evaluateLine(row, col, 0, 1, xoController, aiSymbol, opponentSymbol); // Hàng
+        lineScores[1] = evaluateLine(row, col, 1, 0, xoController, aiSymbol, opponentSymbol); // Cột
+        lineScores[2] = evaluateLine(row, col, 1, 1, xoController, aiSymbol, opponentSymbol); // Đường chéo chính
+        lineScores[3] = evaluateLine(row, col, 1, -1, xoController, aiSymbol, opponentSymbol); // Đường chéo phụ
 
-        // 4. Ưu tiên vị trí
+        // 4. Kiểm tra tình huống buộc thắng (hai chuỗi tiềm năng giao nhau)
+        int aiPotentialCount = 0;
+        for (int s : lineScores) {
+            if (s >= 4000 && s < 10000) { // Chuỗi 4 hoặc 3 của AI
+                aiPotentialCount++;
+            }
+            score += s;
+        }
+        if (aiPotentialCount >= 2) {
+            score += 20000; // Buộc thắng: hai chuỗi tiềm năng
+        }
+
+        // 5. Ưu tiên vị trí
         int center = size / 2;
         if (row == center && col == center) {
             score += 50; // Trung tâm
@@ -84,9 +97,9 @@ public class AIPlayerBehavior implements PlayerBehavior {
         int aiCount = 0, oppCount = 0, emptyCount = 0;
         boolean openStart = false, openEnd = false;
 
-        // Kiểm tra 5 ô theo hướng (dRow, dCol) từ (row, col)
+        // Kiểm tra đoạn 7 ô (rộng hơn để phát hiện chuỗi mở)
         List<int[]> lineCells = new ArrayList<>();
-        for (int i = -4; i <= 4; i++) {
+        for (int i = -5; i <= 5; i++) {
             int r = row + i * dRow;
             int c = col + i * dCol;
             if (r >= 0 && r < size && c >= 0 && c < size) {
@@ -95,6 +108,7 @@ public class AIPlayerBehavior implements PlayerBehavior {
         }
 
         // Đếm ký tự trong đoạn 5 ô liên tiếp
+        int maxScore = 0;
         for (int i = 0; i < lineCells.size() - 4; i++) {
             aiCount = 0;
             oppCount = 0;
@@ -110,6 +124,8 @@ public class AIPlayerBehavior implements PlayerBehavior {
             }
 
             // Kiểm tra tính mở của chuỗi
+            openStart = false;
+            openEnd = false;
             if (i > 0) {
                 int[] prevCell = lineCells.get(i - 1);
                 if (xoController.getXOBoard().getBoard().get(prevCell[0]).get(prevCell[1]) == ' ') {
@@ -124,22 +140,23 @@ public class AIPlayerBehavior implements PlayerBehavior {
             }
 
             // Chấm điểm dựa trên số ký tự
-            if (oppCount == 4 && emptyCount == 1) return 10000; // Chặn đối thủ thắng
-            if (oppCount == 3 && emptyCount == 2) {
-                return (openStart && openEnd) ? 6000 : 5000; // Chặn chuỗi 3, ưu tiên chuỗi mở
+            int score = 0;
+            if (oppCount == 4 && emptyCount == 1) score = 10000; // Chặn đối thủ thắng
+            else if (oppCount == 3 && emptyCount == 2) {
+                score = (openStart && openEnd) ? 7000 : 6000; // Chặn chuỗi 3
+            } else if (oppCount == 2 && emptyCount == 3) {
+                score = (openStart && openEnd) ? 1500 : 1000; // Chặn chuỗi 2
+            } else if (aiCount == 4 && emptyCount == 1) {
+                score = (openStart && openEnd) ? 9000 : 8000; // Tạo chuỗi 4
+            } else if (aiCount == 3 && emptyCount == 2) {
+                score = (openStart && openEnd) ? 6000 : 5000; // Tạo chuỗi 3
+            } else if (aiCount == 2 && emptyCount == 3) {
+                score = (openStart && openEnd) ? 1000 : 800; // Tạo chuỗi 2
             }
-            if (oppCount == 2 && emptyCount == 3) {
-                return (openStart && openEnd) ? 1500 : 1000; // Chặn chuỗi 2, ưu tiên chuỗi mở
-            }
-            if (aiCount == 4 && emptyCount == 1) return 4000; // Tạo cơ hội thắng
-            if (aiCount == 3 && emptyCount == 2) {
-                return (openStart && openEnd) ? 2500 : 2000; // Tạo chuỗi 3, ưu tiên chuỗi mở
-            }
-            if (aiCount == 2 && emptyCount == 3) {
-                return (openStart && openEnd) ? 800 : 500; // Tạo chuỗi 2, ưu tiên chuỗi mở
-            }
+
+            maxScore = Math.max(maxScore, score);
         }
 
-        return 0;
+        return maxScore;
     }
 }

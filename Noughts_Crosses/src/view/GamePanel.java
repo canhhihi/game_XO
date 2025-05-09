@@ -2,6 +2,7 @@
 package view;
 
 import controller.BoardController;
+import controller.MoveHistory;
 import model.AIPlayer;
 import model.Player;
 import model.XOBoard;
@@ -27,12 +28,16 @@ public class GamePanel extends JPanel {
 
     private void initializeComponents() {
         // Top: Control panel
-        controlsPanel = new ControlsPanel(e->modeButton(),e -> resizeButton(), e -> resetGame());
+        controlsPanel = new ControlsPanel(
+                e->modeButton(),
+                e -> resizeButton(),
+                e -> resetGame(),
+                e -> undoButton(),
+                e -> redoButton());
         add(controlsPanel, BorderLayout.SOUTH);
 
         //Game khoi tao
-        XOBoard board = new XOBoard(3, 3);
-        boardController = new BoardController(board,false);
+        createBoard();
 
         // Left: Player 1
         player1Panel = new PlayersPanel(boardController.getPlayers().get(0));
@@ -42,9 +47,7 @@ public class GamePanel extends JPanel {
         player2Panel = new PlayersPanel(boardController.getPlayers().get(1));
         add(player2Panel, BorderLayout.EAST);
 
-        // Center: Board panel
-        centerPanel = new JPanel();
-        resetGame();
+        updateUndoButtonState();
     }
 
     //Tao bang
@@ -71,8 +74,6 @@ public class GamePanel extends JPanel {
         centerPanel.add(boardPanel, BorderLayout.CENTER);
         add(centerPanel,BorderLayout.CENTER);
 
-        player1Panel.setPlayer(boardController.getPlayers().get(0));
-        player2Panel.setPlayer(boardController.getPlayers().get(1));
     }
 
     //modebutton, thay doi che do
@@ -95,6 +96,7 @@ public class GamePanel extends JPanel {
         player1Panel.updateScore();
         player2Panel.updateScore();
 
+        updateUndoButtonState();
         revalidate();
         repaint();
     }
@@ -105,6 +107,7 @@ public class GamePanel extends JPanel {
         boardController.switchPlayer();
         if(boardController.isAIMode()) if(boardController.getActualPlayer() instanceof AIPlayer) boardController.switchPlayer();
         displayPanel.setDisplayText(boardController.getActualPlayer());
+        updateUndoButtonState();
         repaint();
     }
 
@@ -113,10 +116,15 @@ public class GamePanel extends JPanel {
         createBoard();
 
         // Cập nhật tên và tỉ số
+        player1Panel.setPlayer(boardController.getPlayers().get(0));
+        player2Panel.setPlayer(boardController.getPlayers().get(1));
+
         player1Panel.updateScore();
         player2Panel.updateScore();
         player1Panel.updateName();
         player2Panel.updateName();
+
+        updateUndoButtonState();
 
         revalidate();
         repaint();
@@ -130,6 +138,8 @@ public class GamePanel extends JPanel {
         if (boardController.checkMove(row, col)) {
             char symbol = boardController.getActualPlayer().getCurrentSymbol();
             boardPanel.updateButton(row, col, symbol);
+
+            updateUndoButtonState();
             if (boardController.checkWinCondition(row, col)) {
                 boardController.updateScore();
                 player1Panel.updateScore();
@@ -157,6 +167,7 @@ public class GamePanel extends JPanel {
     if (boardController.checkMove(row, col)) {
         char symbol = boardController.getActualPlayer().getCurrentSymbol();
         boardPanel.updateButton(row, col, symbol);
+        updateUndoButtonState();
 
         if (boardController.checkWinCondition(row, col)) {
             boardController.updateScore();
@@ -183,6 +194,84 @@ public class GamePanel extends JPanel {
         JOptionPane.showMessageDialog(this, "Hòa!");
             refreshButton();
     }
+
+
+    /**
+     * Undoes the last move made on the board, updating the UI accordingly
+     */
+    private void undoButton() {
+        if (!boardController.canUndo()) {
+            return;
+        }
+
+        // If in AI mode and there are at least 2 moves, undo both human and AI moves
+        if (boardController.isAIMode() && boardController.getMoveCount() >= 2) {
+            // Undo AI move first
+            MoveHistory aiMove = boardController.undoLastMove();
+            if (aiMove != null) {
+                boardPanel.updateButton(aiMove.getRow(), aiMove.getCol(), ' ');
+                boardController.switchPlayer();
+            }
+
+            // Then undo human move
+            MoveHistory humanMove = boardController.undoLastMove();
+            if (humanMove != null) {
+                boardPanel.updateButton(humanMove.getRow(), humanMove.getCol(), ' ');
+            }
+        } else {
+            // Just undo a single move in PvP mode
+            MoveHistory lastMove = boardController.undoLastMove();
+            if (lastMove != null) {
+                boardPanel.updateButton(lastMove.getRow(), lastMove.getCol(), ' ');
+            }
+        }
+
+        // Update the display panel to show the current player
+        displayPanel.setDisplayText(boardController.getActualPlayer());
+
+        // Update undo button state
+        updateUndoButtonState();
+    }
+    private void updateUndoButtonState() {
+        controlsPanel.setUndoEnabled(boardController.canUndo());
+        controlsPanel.setRedoEnabled(boardController.canRedo());
+    }
+
+    private void redoButton() {
+        if (!boardController.canRedo()) {
+            return;
+        }
+
+        // If in AI mode, need to redo both human and AI moves
+        if (boardController.isAIMode()) {
+            // Redo human move first
+            MoveHistory humanMove = boardController.redoLastMove();
+            if (humanMove != null) {
+                boardPanel.updateButton(humanMove.getRow(), humanMove.getCol(), humanMove.getSymbol());
+
+                // Then redo AI move if available
+                if (boardController.canRedo()) {
+                    MoveHistory aiMove = boardController.redoLastMove();
+                    if (aiMove != null) {
+                        boardPanel.updateButton(aiMove.getRow(), aiMove.getCol(), aiMove.getSymbol());
+                    }
+                }
+            }
+        } else {
+            // Just redo a single move in PvP mode
+            MoveHistory lastMove = boardController.redoLastMove();
+            if (lastMove != null) {
+                boardPanel.updateButton(lastMove.getRow(), lastMove.getCol(), lastMove.getSymbol());
+            }
+        }
+
+        // Update the display panel to show the current player
+        displayPanel.setDisplayText(boardController.getActualPlayer());
+
+        // Update button states
+        updateUndoButtonState();
+    }
+
 
 }
 
